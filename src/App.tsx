@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import { Button } from "./components/Button";
 import { api } from "./utils/api";
-import { CARD_VALUES, SUITES } from './utils/values';
+import { CARD_VALUES, SUITES, SUITES_PROTO } from "./utils/values";
+import backCardImg from "./assets/images/back-card.png";
 
 interface ApiResponse {
   deck_id: string;
@@ -21,15 +23,15 @@ interface Player {
 function App() {
   const [deckId, setDeckId] = useState<null | string>(null);
 
-  const [player1, setPlayer1] = useState<Player>({ name: 'p1', score: 0 });
-  const [player2, setPlayer2] = useState<Player>({ name: 'p2', score: 0 });
+  const [player1, setPlayer1] = useState<Player>({ name: "p1", score: 0 });
+  const [player2, setPlayer2] = useState<Player>({ name: "p2", score: 0 });
 
   const [card, setCard] = useState<null | Card>(null);
 
   const [itsPlayer1Turn, setItsPlayer1Turn] = useState(true);
 
-  const [selectedValue, setSelectedValue] = useState('');
-  const [selectedSuit, setSelectedSuit] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
+  const [selectedSuit, setSelectedSuit] = useState("");
 
   const [turnCount, setTurnCount] = useState(1);
 
@@ -44,7 +46,9 @@ function App() {
   }, [turnCount]);
 
   async function getDeckId() {
-    const response = await api.get<ApiResponse>('api/deck/new/shuffle/?deck_count=1');
+    const response = await api.get<ApiResponse>(
+      "api/deck/new/shuffle/?deck_count=1"
+    );
     const { deck_id } = response.data;
     setDeckId(deck_id);
   }
@@ -64,8 +68,8 @@ function App() {
   }
 
   function changeTurn() {
-    setSelectedSuit('');
-    setSelectedValue('');
+    setSelectedSuit("");
+    setSelectedValue("");
 
     const isP1Time = itsPlayer1Turn;
 
@@ -96,7 +100,10 @@ function App() {
       roundPoint += 1;
     }
 
-    if (scopedCard?.suit === selectedSuit && scopedCard?.value === selectedValue) {
+    if (
+      scopedCard?.suit === selectedSuit &&
+      scopedCard?.value === selectedValue
+    ) {
       roundPoint = 5;
     }
 
@@ -108,43 +115,92 @@ function App() {
 
   function getWinner() {
     if (player1.score > player2.score) {
-      return 'Player 1'
+      return "Player 1";
     } else if (player2.score > player1.score) {
-      return 'Player 2';
-    } else return 'DRAW';
+      return "Player 2";
+    } else return "DRAW";
   }
 
   return (
-    <div>
-      <img src={card?.image} alt='card' /><br />
-      <h1>Turn {turnCount}: {itsPlayer1Turn ? 'Player 1' : 'Player 2'}</h1>
+    <div className="h-[100vh]  bg-dracula-bg">
+      <main className="max-w-[1360px] mx-auto flex flex-col">
+        <header className="flex flex-col justify-center items-center">
+          <h1 className="my-4 text-2xl text-dracula-white">CARDS GUESSER</h1>
 
-      <h3>Player1 : {player1.score}</h3>
-      <h3>Player2 : {player2.score}</h3>
+          <h2 className="text-dracula-white ">
+            Turn {turnCount}: {itsPlayer1Turn ? "Player 1" : "Player 2"}
+          </h2>
 
-      <div>
-        {CARD_VALUES.map(card => {
-          return (
-            <button key={card} onClick={() => setSelectedValue(card)} >{card}</button>
-          )
-        })}
-        {" "}selected: {selectedValue}
-      </div><br />
+          <section className="mt-2 flex flex-col items-center">
+            <h3 className="text-dracula-green">Player1 : {player1.score}</h3>
+            <h3 className="text-dracula-red">Player2 : {player2.score}</h3>
+          </section>
+        </header>
 
-      <div>
-        {SUITES.map(suit => {
-          return (
-            <button key={suit} onClick={() => setSelectedSuit(suit)} >{suit}</button>
-          )
-        })}
-        {" "}selected: {selectedSuit}
-      </div><br />
+        {/* {card ? (
+          <img src={card?.image} alt="card" />
+        ) : (
+          <img className="w-96" src={backCardImg} alt="card" />
+        )} */}
 
-      <button onClick={submitCard} >Submit card</button><br />
+        <div
+          className={`mt-2 flex justify-center flex-col items-center ${
+            itsPlayer1Turn ? "text-dracula-green" : "text-dracula-red"
+          }`}
+        >
+          <h3> SELECTED VALUE: {selectedValue}</h3>
+          <h3> SELECTED SUIT: {selectedSuit}</h3>
+        </div>
 
-      {endGame && (<h1>GAME OVER, WINNER: {getWinner()}</h1>)}
-    </div >
-  )
+        <section className="mt-2 flex justify-center">
+          <img className="w-96" src={backCardImg} alt="card" />
+        </section>
+
+        <div className="mt-6 flex justify-center gap-2">
+          {CARD_VALUES.map((card) => {
+            return (
+              <Button
+                className={`${
+                  itsPlayer1Turn ? "bg-dracula-green" : "bg-dracula-red"
+                } ${selectedValue === card && "opacity-20"}`}
+                key={card}
+                onClick={() => setSelectedValue(card)}
+              >
+                {card}
+              </Button>
+            );
+          })}
+        </div>
+
+        <div className="mt-2 flex justify-center gap-2">
+          {SUITES.map((suit) => {
+            return (
+              <Button
+                className={`${
+                  itsPlayer1Turn ? "bg-dracula-green" : "bg-dracula-red"
+                } ${selectedSuit === suit && "opacity-20"}`}
+                key={SUITES_PROTO[suit].value}
+                onClick={() => setSelectedSuit(suit)}
+              >
+                {SUITES_PROTO[suit].image}
+              </Button>
+            );
+          })}
+        </div>
+
+        <footer className="flex justify-center">
+          <Button
+            className="bg-dracula-white text-dracula-bg mt-6 max-w-xs"
+            onClick={submitCard}
+          >
+            Submit card
+          </Button>
+        </footer>
+
+        {endGame && <h1>GAME OVER, WINNER: {getWinner()}</h1>}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
