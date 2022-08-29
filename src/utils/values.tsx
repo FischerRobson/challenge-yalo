@@ -37,4 +37,6 @@ export const SUITES_PROTO = {
   },
 } as const;
 
+const test = Object.entries(SUITES_PROTO).map((e) => e.values);
+
 // export const SUITES = Object.keys(SUITES_PROTO);
